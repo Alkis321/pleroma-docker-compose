@@ -9,20 +9,13 @@ services:
     ports:
       - "127.0.0.1:4000:4000"
     volumes:
-      - ./config.exs:/var/lib/pleroma/config.exs
-      - ./prod.secrets.exs:/var/lib/pleroma/config/prod.secrets.exs
+      - ./config.exs:/pleroma/config.exs
+      - ./prod.secret.exs:/pleroma/config/prod.secret.exs
       - ./static:/var/lib/pleroma/static
       - pleroma-uploads:/var/lib/pleroma/uploads
-    environment:
-      DB_USER: pleroma
-      DB_PASS: awkward
-      DB_HOST: pleroma-db
-      DB_NAME: pleroma
-      INSTANCE_NAME: Dutchman
-      ADMIN_EMAIL: pleroma+admin@example.com
-      NOTIFY_EMAIL: pleroma+admin@example.com
-      DOMAIN: social.mpampis.com
-      PORT: 4000
+    env_file:
+      - pleroma.env
+
 
   pleroma-db:
     image: circleci/postgres:9-bullseye-ram

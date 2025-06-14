@@ -26,3 +26,9 @@ config :pleroma, :frontend_configurations,
 
 config :web_push_encryption, :vapid_details,
   subject: "mailto:#{System.get_env("ADMIN_EMAIL", "pleroma+admin@example.com")}",
+
+
+config :pleroma, Pleroma.Web.Endpoint,
+  secret_key_base: System.get_env("SECRET_KEY_BASE"),
+  url: [host: "localhost", port: 4000],
+  http: [ip: {0, 0, 0, 0}, port: 4000]
