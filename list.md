@@ -1,0 +1,6 @@
+- [ ] make necessary folders in workers with ansible, if it works
+- [ ] replace with env variables sensitive info inside of yml
+- [ ] envstub said sensitive info in yml for manager
+- [ ] modify ports and networks in yml to account for swarm integration
+- [ ] possible nginx config if necassary
+- [ ] maybe have db working?? (optional)
