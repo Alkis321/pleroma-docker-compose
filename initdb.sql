@@ -1,0 +1,2 @@
+CREATE DATABASE pleroma;
+GRANT ALL PRIVILEGES ON DATABASE pleroma TO pleroma;

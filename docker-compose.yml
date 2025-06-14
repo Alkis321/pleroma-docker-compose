@@ -9,10 +9,13 @@ services:
     ports:
       - "127.0.0.1:4000:4000"
     volumes:
-      - ./config.exs:/pleroma/config.exs
-      - ./prod.secret.exs:/pleroma/config/prod.secret.exs
-      - ./static:/var/lib/pleroma/static
-      - pleroma-uploads:/var/lib/pleroma/uploads
+      - ./config/config.exs:/pleroma/config/config.exs
+      - ./config/prod.secret.exs:/pleroma/config/prod.secret.exs
+      - ./static/static/background1.jpg:/pleroma/static/static/background1.jpg
+      - ./static/static/favicon.png:/pleroma/static/static/favicon.png
+      - pleroma-uploads:/pleroma/uploads
+
+
     env_file:
       - pleroma.env
 
@@ -22,10 +25,11 @@ services:
     container_name: "pleroma-db"
     hostname: "pleroma-db"
     restart: always
-    # ports:
-    #   - "127.0.0.1:5432:5432"
+    ports:
+      - "127.0.0.1:5432:5432"
     volumes:
       - pleroma-db-data:/var/lib/postgresql/data
+      - ./initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
     environment:
       POSTGRES_USER: pleroma
       POSTGRES_PASSWORD: awkward
