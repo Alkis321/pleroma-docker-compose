@@ -1,19 +1,135 @@
 - name: Create folders for pleroma
   hosts: workers
   become: true
-  gather_facts: false
+  remote_user: "debian"
   vars:
-    VOLUME_MAIN_DATA_PATH: "var/fedlab/pleroma"
-    CONTAINER_NAMES:
-      - db
-      - web
-      - uploads
-      - config
-      - static
+    user: "fedlab"
+    VOLUME_MAIN_DATA_PATH: "/var/fedlab/pleroma"
   tasks:
-    - name: Create directories for each container
+    - name: Ensure debian user owns all files
       file:
-        path: "./{{ VOLUME_MAIN_DATA_PATH }}{{ item }}"
+        path: "{{ VOLUME_MAIN_DATA_PATH }}"
+        owner: debian
+        group: debian
+        recurse: yes
+
+    # Delete all directories
+    - name: Delete db directory
+      file:
+        path: "{{ VOLUME_MAIN_DATA_PATH }}/db"
+        state: absent
+      ignore_errors: yes
+
+    - name: Delete web directory
+      file:
+        path: "{{ VOLUME_MAIN_DATA_PATH }}/web"
+        state: absent
+      ignore_errors: yes
+
+    - name: Delete uploads directory
+      file:
+        path: "{{ VOLUME_MAIN_DATA_PATH }}/uploads"
+        state: absent
+      ignore_errors: yes
+
+    - name: Delete config directory
+      file:
+        path: "{{ VOLUME_MAIN_DATA_PATH }}/config"
+        state: absent
+      ignore_errors: yes
+
+    - name: Delete static directory
+      file:
+        path: "{{ VOLUME_MAIN_DATA_PATH }}/static"
+        state: absent
+      ignore_errors: yes
+
+    # Create directories with fedlab ownership
+    - name: Create db directory
+      file:
+        path: "{{ VOLUME_MAIN_DATA_PATH }}/db"
         state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
         mode: '0755'
-      loop: "{{ container_names }}"
+
+    - name: Create web directory
+      file:
+        path: "{{ VOLUME_MAIN_DATA_PATH }}/web"
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0755'
+
+    - name: Create uploads directory
+      file:
+        path: "{{ VOLUME_MAIN_DATA_PATH }}/uploads"
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0755'
+
+    - name: Create config directory
+      file:
+        path: "{{ VOLUME_MAIN_DATA_PATH }}/config"
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0755'
+
+    - name: Create static/static directory
+      file:
+        path: "{{ VOLUME_MAIN_DATA_PATH }}/static/static"
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0755'
+        recurse: yes
+
+    - name: Copy Pleroma config.exs
+      copy:
+        src: ./config/config.exs
+        dest: "{{ VOLUME_MAIN_DATA_PATH }}/config/config.exs"
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0644'
+
+    - name: Copy Pleroma prod.secret.exs
+      copy:
+        src: ./config/prod.secret.exs
+        dest: "{{ VOLUME_MAIN_DATA_PATH }}/config/prod.secret.exs"
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0644'
+
+    - name: Copy static background image
+      copy:
+        src: ./static/static/background1.jpg
+        dest: "{{ VOLUME_MAIN_DATA_PATH }}/static/static/background1.jpg"
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0644'
+
+    - name: Copy static favicon
+      copy:
+        src: ./static/static/favicon.png
+        dest: "{{ VOLUME_MAIN_DATA_PATH }}/static/static/favicon.png"
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0644'
+
+    - name: Copy nginx.conf
+      copy:
+        src: ./config/nginx.conf
+        dest: "{{ VOLUME_MAIN_DATA_PATH }}/config/nginx.conf"
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0644'
+
+    - name: Create initdb.sql file
+      copy:
+        src: ./config/initdb.sql
+        dest: "{{ VOLUME_MAIN_DATA_PATH }}/initdb.sql"
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0644'
