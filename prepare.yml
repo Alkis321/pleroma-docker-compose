@@ -1,0 +1,19 @@
+- name: Create folders for pleroma
+  hosts: workers
+  become: true
+  gather_facts: false
+  vars:
+    VOLUME_MAIN_DATA_PATH: "var/fedlab/pleroma"
+    CONTAINER_NAMES:
+      - db
+      - web
+      - uploads
+      - config
+      - static
+  tasks:
+    - name: Create directories for each container
+      file:
+        path: "./{{ VOLUME_MAIN_DATA_PATH }}{{ item }}"
+        state: directory
+        mode: '0755'
+      loop: "{{ container_names }}"
