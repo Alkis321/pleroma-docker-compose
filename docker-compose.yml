@@ -48,11 +48,13 @@ services:
 
   nginx:
     image: nginx:alpine
+    env_file:
+      - .env
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${NGINX_CONF_PATH}:/etc/nginx/nginx.conf:ro
     ports:
       - "8876:80"   # HTTP
-      - "7765:443"  # HTTPS
+#      - "7765:443" HTTPS  
     networks:
       - pleroma-net
     deploy:
