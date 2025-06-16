@@ -1,0 +1,133 @@
+= Pleroma Deployment on Okeanos Swarm
+Authors: ice21390217 ice21390087
+Version: 1.0
+
+:doctype: book
+:toc: left
+:icons: font
+:source-highlighter: pygments
+:pygments-style: manni
+:pygments-linenums-mode: inline
+:toc-title: Πίνακας περιεχομένων
+:toclevels: 4
+:sectlinks:
+:sectanchors:
+:pdf-style: basic
+:pdf-fontsdir: fonts/
+:pdf-stylesdir: styles/
+:source-highlighter: coderay
+
+
+== Τεκμηρίωση και Παραδοτέα
+
+Brief description of the goal of this assignment.
+
+=== 1. Περιγραφή λειτουργικότητας του κάθε service
+
+Pleroma is a free, federated social networking platform. It is part of the Fediverse, an ensemble of federated servers that use shared protocols. This deployment focuses on running Pleroma as a containerized service.
+
+The primary service is Pleroma itself. Its functionality is defined and managed through a Docker Compose file.
+
+Explain each section of the compose file:
+[source,yaml]
+----
+version: "3.9"
+services:
+  pleroma:
+    image: ... // Specify the Pleroma image used
+    volumes:
+      - /pleroma/users/data:${VOLUME}/data // Maps local data storage to the container
+    networks:
+      - pleroma_net // Connects the service to a defined network
+    environment:
+      ... // Environment variables for Pleroma configuration
+networks:
+  pleroma_net:
+    external: true // Specifies that the network is pre-existing or managed externally
+----
+*(Further explanation of each service defined in the docker-compose.yml, including the PostgreSQL service if it's part of the compose, or how Pleroma connects to the shared cluster).*
+
+=== 2. Διαδικασία υλοποίησης
+
+The deployment process involved setting up a Docker Swarm environment and utilizing Ansible for configuration management.
+
+**Architecture Overview:**
+The swarm architecture consists of:
+- Manager node: assigned to the professor. This node orchestrates the swarm.
+- Worker nodes: These nodes run the application containers and are controlled via SSH + Ansible for automated setup and management.
+- Shared PostgreSQL cluster: Pleroma instances connect to a shared PostgreSQL database cluster for data persistence.
+- Pleroma container deployment strategy: Containers are deployed as services on the worker nodes, managed by the Docker Swarm manager.
+
+**File Structure:**
+The project is organized as follows:
+[source,bash]
+----
+/pleroma/
+├── users/
+│   └── data:{VOLUME}/data  # Persistent data for Pleroma instances
+├── docker-compose.yml      # Defines the Pleroma service and its configuration
+├── ansible/
+│   ├── inventory.ini       # Ansible inventory defining manager and worker nodes
+│   ├── playbook.yml        # Ansible playbook for automating tasks on worker nodes
+----
+
+**Ansible Usage:**
+Ansible was used for automating the setup on worker nodes. Key steps included:
+1.  Create directories on remote workers: Ensuring necessary paths for Pleroma data exist.
+2.  Use SSH keys to connect: Secure, passwordless connection to worker nodes for Ansible execution.
+3.  Deploy compose from manager to worker: While Docker Swarm handles the service deployment based on the `docker-compose.yml` (converted to a stack file), Ansible ensures the worker nodes are prepared.
+
+Example Ansible task for creating directories:
+[source,yaml]
+----
+- name: Ensure Pleroma data dir exists
+  hosts: workers
+  become: true
+  tasks:
+    - name: Create data directories
+      file:
+        path: "/pleroma/users/data/{{ volume }}/data" # 'volume' should be a defined variable
+        state: directory
+        recurse: yes
+----
+
+**Docker Compose for Service Definition:**
+The `docker-compose.yml` file is used to define the Pleroma service, its image, volume mounts for persistent data, network connections, and environment variables necessary for its operation. This file serves as the blueprint for deploying the Pleroma application within the Docker Swarm.
+
+**Deployment Steps:**
+*(Detailed steps on how the deployment was actually performed. For example:
+1. Ansible playbook execution to prepare worker nodes.
+2. Docker stack deployment command run on the manager node.
+3. Verification of service status.)*
+
+**PostgreSQL Cluster Collaboration:**
+- Pleroma instances are configured to use the shared PostgreSQL container/cluster.
+- The connection string format typically is: `postgresql://user:password@host:port/database`
+- Strategies for port collision resolution (e.g., ensuring the shared PostgreSQL uses a unique, known port, or using Docker's internal network resolution).
+
+=== 3. Προβλήματα και επίλυση
+
+During the deployment and testing phase, several issues were encountered:
+- Known issues (permissions, volume mounts, etc.):
+  *(Detail specific permission problems, e.g., Pleroma container user not having write access to mounted volumes, and how they were resolved, e.g., `chown` on the host or init-container logic).*
+  *(Detail specific volume mount problems, e.g., incorrect paths, SELinux issues, and their solutions).*
+- How to debug container logs:
+  *(Explain how `docker service logs <service_name>` or `docker logs <container_id>` was used to inspect Pleroma and database logs for errors).*
+
+*(Add more specific logs/errors and their resolutions if available. For example:
+  - Error message: `...`
+  - Cause: `...`
+  - Solution: `...`)*
+
+=== 4. Ανεπιτυχείς προσπάθειες (εάν υπάρχουν)
+
+*(Document any failed attempts, dead ends, or significant challenges encountered. For example:
+- Initial attempts to use a different networking configuration that failed.
+- Issues with Docker Swarm resource limits or specific behaviors.
+- Problems with specific Pleroma image versions.
+- Difficulties in setting up the shared PostgreSQL cluster or connecting to it.)*
+
+== Συμπεράσματα
+
+Summary of lessons learned and reflection.
+*(Elaborate on what was learned about Docker Swarm, Ansible, Pleroma deployment, container orchestration, and collaborative development, if applicable.)*
